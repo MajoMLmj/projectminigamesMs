@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiniJuegos Ms - Edición Web Premium</title>
+    <style>
+        /* --- DISEÑO GENERAL Y FONDO ESPACIAL GALÁCTICO --- */
+        :root {
+            --header-blue: #2c3e7f;
+            --bg-purple: #4a2d6f;
+            --purple-dark: #3a1f54;
+            --purple-light: #5a3d7a;
+            --btn-blue: #2196f3;
+            --btn-green: #4caf50;
+            --btn-red: #f44336;
+            --btn-orange: #ff9800;
+            --btn-purple: #9c27b0;
+            --text-color: #ffffff;
+            --neon-blue: #00bfff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(180deg, #2a2a4a 0%, #4a2d6f 50%, #3a1f54 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 10px 12px 40px 12px;
+        }
+
+        /* --- BANNER SUPERIOR ESTILO MINIJUEGOS MS --- */
+        .app-banner {
+            width: 100%;
+            height: auto;
+            max-height: 140px;
+            object-fit: contain;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 2px solid rgba(179, 136, 255, 0.2);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            background: rgba(13, 4, 26, 0.6);
+        }
+
+        /* --- CONTENEDORES DE PANTALLAS (GLASSMORPHISM NEÓN) --- */
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 360px;
+            padding: 18px 18px 24px 18px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            text-align: center;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+            margin: 0 auto 18px auto;
+        }
+
+        /* Pantalla de Registro con temática Rosa */
+        #screen-register {
+            background: rgba(244, 67, 54, 0.08);
+            border: 2px solid #f44336;
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.15), inset 0 0 15px rgba(244, 67, 54, 0.1);
+        }
+
+        /* Pantalla de Login con temática Azul */
+        #screen-login {
+            background: rgba(33, 150, 243, 0.08);
+            border: 2px solid #2196f3;
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.15), inset 0 0 15px rgba(33, 150, 243, 0.1);
+        }
+
+        /* Pantallas de menú y herramientas generales */
+        #screen-menu, #screen-canvas, #screen-calc, #screen-cars {
+            background: rgba(74, 45, 111, 0.3);
+            border: 2px solid #5a3d7a;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(90, 61, 122, 0.2);
+        }
+
+        /* --- NUEVA PANTALLA DE CARGA DE CARRERAS (ESTILO SOLICITADO) --- */
+        #screen-race-loading {
+            background: rgba(10, 5, 20, 0.95);
+            border: 2px solid #00bfff;
+            box-shadow: 0 0 30px rgba(0, 191, 255, 0.3);
+            font-family: 'Arial Black', Impact, sans-serif;
+        }
+
+        .race-loader-title {
+            font-size: 2rem;
+            font-style: italic;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 0 10px #00bfff, 0 0 20px #f44336;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .race-loader-subtitle {
+            font-size: 0.9rem;
+            color: #f44336;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+        }
+
+        .race-loader-img-container {
+            width: 100%;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 191, 255, 0.2);
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .race-loader-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 12px rgba(0, 191, 255, 0.6));
+            animation: carVibrate 0.15s linear infinite;
+        }
+
+        .race-progressbar-bg {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            border: 1px solid rgba(0, 191, 255, 0.3);
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .race-progressbar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #00bfff, #f44336);
+            box-shadow: 0 0 10px #00bfff;
+            border-radius: 50px;
+            transition: width 0.1s linear;
+        }
+
+        .race-loader-status {
+            font-size: 0.9rem;
+            color: #ffffff;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            font-weight: normal;
+            font-family: sans-serif;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        /* --- TEXTOS Y TÍTULOS --- */
+        h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+
+        #screen-register h1 { color: #ffffff; text-shadow: 0 0 10px #f44336; }
+        #screen-login h1 { color: #ffffff; text-shadow: 0 0 10px #2196f3; }
+        #screen-menu h1, #screen-canvas h1, #screen-calc h1, #screen-cars h1 { text-shadow: 0 0 10px #5a3d7a; }
+        h2 { margin-bottom: 15px; font-size: 1.4rem; color: #ffffff; }
+
+        /* --- FORMULARIOS E INPUTS --- */
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        #screen-register label { color: #f44336; }
+        #screen-login label { color: #2196f3; }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            background: rgba(13, 4, 26, 0.7);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        #screen-register input { border: 1px solid rgba(244, 67, 54, 0.4); }
+        #screen-register input:focus { outline: none; border-color: #f44336; box-shadow: 0 0 10px rgba(244, 67, 54, 0.4); }
+        #screen-login input { border: 1px solid rgba(33, 150, 243, 0.4); }
+        #screen-login input:focus { outline: none; border-color: #2196f3; box-shadow: 0 0 10px rgba(33, 150, 243, 0.4); }
+
+        .alert { font-size: 0.9rem; margin-top: 10px; min-height: 20px; font-weight: bold; }
+        #screen-register .alert { color: #f44336; }
+        #screen-login .alert { color: #2196f3; }
+
+        /* --- BOTONES PREMIUM RECTANGULARES --- */
+        button, .btn {
+            padding: 14px 28px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: transparent;
+        }
+
+        .btn-register-submit {
+            color: #ffffff; border: 2px solid #f44336;
+            background: rgba(244, 67, 54, 0.1); box-shadow: 0 0 10px rgba(244, 67, 54, 0.2);
+        }
+        .btn-register-submit:hover { background: #f44336; box-shadow: 0 0 20px rgba(244, 67, 54, 0.6); transform: translateY(-2px); }
+
+        .btn-login-submit {
+            color: #ffffff; border: 2px solid #2196f3;
+            background: rgba(33, 150, 243, 0.1); box-shadow: 0 0 10px rgba(33, 150, 243, 0.2);
+        }
+        .btn-login-submit:hover { background: #2196f3; box-shadow: 0 0 20px rgba(33, 150, 243, 0.6); transform: translateY(-2px); }
+
+        .btn-switch {
+            background: transparent; border: none; font-size: 0.85rem; color: #ffffff;
+            opacity: 0.6; text-decoration: underline; letter-spacing: 1px; margin-top: 12px;
+        }
+        .btn-switch:hover { opacity: 1; transform: none; }
+
+        /* --- BOTONES DEL MENÚ CON COLORES ESPECÍFICOS --- */
+        .btn-menu {
+            padding: 14px 28px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: white;
+            border: none;
+        }
+
+        .btn-menu-blue {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        .btn-menu-blue:hover { 
+            background: linear-gradient(135deg, #42a5f5 0%, #2196f3 100%);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.7);
+            transform: translateY(-3px);
+        }
+
+        .btn-menu-green {
+            background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        .btn-menu-green:hover { 
+            background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.7);
+            transform: translateY(-3px);
+        }
+
+        .btn-menu-red {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+        .btn-menu-red:hover { 
+            background: linear-gradient(135deg, #ef5350 0%, #f44336 100%);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.7);
+            transform: translateY(-3px);
+        }
+
+        .btn-menu-orange {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+        .btn-menu-orange:hover { 
+            background: linear-gradient(135deg, #ffb74d 0%, #ff9800 100%);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.7);
+            transform: translateY(-3px);
+        }
+
+        .btn-menu-purple {
+            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+        }
+        .btn-menu-purple:hover { 
+            background: linear-gradient(135deg, #ba68c8 0%, #9c27b0 100%);
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.7);
+            transform: translateY(-3px);
+        }
+
+        .menu-grid button, .controls-panel button, #screen-cars button {
+            background: linear-gradient(45deg, var(--purple-light), #5a3d7a);
+            color: white; border: none; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        .menu-grid button:hover, .controls-panel button:hover, #screen-cars button:hover {
+            transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5); filter: brightness(1.1);
+        }
+
+        .btn-secondary {
+            background: transparent !important; border: 2px solid #5a3d7a !important;
+            box-shadow: none !important; color: #5a3d7a !important;
+        }
+        .btn-secondary:hover { background: rgba(90, 61, 122, 0.1) !important; box-shadow: 0 0 15px rgba(90, 61, 122, 0.3) !important; }
+
+        .btn-clicker {
+            background: linear-gradient(45deg, #00bfff, #0072ff) !important; font-size: 1.3rem; padding: 20px;
+            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.4) !important; border-radius: 12px !important;
+        }
+
+        /* --- PANTALLA DE CARGA GENERAL --- */
+        .loader-container { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .custom-spinner { width: 100px; height: 100px; object-fit: contain; animation: spin 1.5s linear infinite; filter: drop-shadow(0 0 8px #5a3d7a); }
+
+        /* --- MENÚ DE JUEGOS --- */
+        .menu-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .tile { background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.45); cursor: pointer; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+        .tile:hover { transform: translateY(-6px); box-shadow: 0 12px 36px rgba(0,0,0,0.6); }
+        .tile-caption { padding: 10px; font-weight: 700; color: #e9efff; background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.12)); text-align: center; }
+        @media (min-width: 520px) { .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+        .user-welcome { font-size: 1.1rem; margin-bottom: 15px; color: #5a3d7a; }
+
+        /* --- PANTALLA DEL LIENZO --- */
+        .canvas-container { background: #110524; border-radius: 16px; padding: 10px; border: 2px solid #5a3d7a; }
+        canvas { background: #ffffff; border-radius: 8px; cursor: crosshair; display: block; margin: 0 auto; }
+        .color-picker-group { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
+        .color-btn { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.2); cursor: pointer; position: relative; }
+        .color-btn.selected { border-color: #ffffff; box-shadow: 0 0 12px rgba(255, 255, 255, 0.8); }
+        .color-btn.eraser::after { content: "✏️"; font-size: 0.8rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+        /* --- CALCULADORA --- */
+        .calc-container { background: rgba(13, 4, 26, 0.8); border-radius: 16px; padding: 15px; border: 2px solid #5a3d7a; box-shadow: inset 0 0 15px rgba(90, 61, 122, 0.3); }
+        .calc-screen { width: 100%; height: 60px; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(0, 191, 255, 0.3); border-radius: 10px; margin-bottom: 15px; color: #00ffcc; font-family: 'Courier New', Courier, monospace; font-size: 1.6rem; text-align: right; padding: 10px 15px; font-weight: bold; text-shadow: 0 0 8px rgba(0, 255, 210, 0.6); }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .calc-btn { background: rgba(61, 28, 117, 0.6); color: white; border: 1px solid rgba(90, 61, 122, 0.2); padding: 15px; font-size: 1.2rem; font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 0; }
+        .calc-btn:hover { background: #5a3d7a; box-shadow: 0 0 10px rgba(90, 61, 122, 0.5); transform: translateY(-2px); }
+        .calc-btn.op { background: linear-gradient(135deg, #4caf50, #2e7d32); color: #ffffff; border-color: #4caf50; }
+        .calc-btn.clear { background: linear-gradient(135deg, #f44336, #c62828); }
+        .calc-btn.equal { background: linear-gradient(135deg, #2196f3, #1565c0); grid-column: span 2; }
+
+        /* --- PISTA DEL JUEGO CLICKER --- */
+        .race-track-container { background: #222; border: 3px solid #f44336; border-radius: 12px; padding: 15px 10px; position: relative; margin-bottom: 15px; overflow: hidden; }
+        .track-lane { height: 60px; border-bottom: 2px dashed rgba(255, 255, 255, 0.4); position: relative; display: flex; align-items: center; }
+        .track-lane:last-child { border-bottom: none; }
+        .finish-line { position: absolute; right: 40px; top: 0; bottom: 0; width: 10px; background: repeating-linear-gradient(0deg, #fff, #fff 5px, #000 5px, #000 10px); }
+        .car { width: 50px; height: 30px; border-radius: 6px; position: absolute; left: 10px; transition: left 0.08s linear; display: flex; align-items: center; justify-content: flex-end; font-weight: bold; font-size: 0.7rem; color: white; padding-right: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        .car-player { background: #2196f3; border: 2px solid #fff; } 
+        .car-enemy { background: #f44336; border: 2px solid #fff; }  
+
+        .scores-list { text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-top: 10px; max-height: 150px; overflow-y: auto; }
+        .score-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+
+        /* --- CONFIGURACIÓN DE IMPRESIÓN --- */
+        @media print {
+            body { background: white !important; color: black !important; padding: 0; }
+            .screen { display: none !important; }
+            #print-section { display: block !important; color: black !important; padding: 20px; text-align: center; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            .print-table th, .print-table td { border: 1px solid #333; padding: 10px; text-align: left; }
+            .printed-canvas-preview { max-width: 100%; border: 2px solid #000; margin-top: 25px; border-radius: 8px; background: white !important; }
+        }
+        #print-section { display: none; }
+
+        /* --- HEADER BANNER --- */
+        .app-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #2c3e7f 0%, #1e2a5c 100%);
+            border-bottom: 3px solid #00bfff;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.6);
+            border-radius: 0 0 12px 12px;
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .app-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00bfff, transparent);
+        }
+
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+            font-family: 'Arial Black', Impact, sans-serif;
+        }
+
+        .header-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #00bfff;
+            border-radius: 10px;
+            padding: 8px;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .header-logo-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(0, 191, 255, 0.6);
+            border-color: #00e5ff;
+        }
+
+        .header-logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 6px rgba(0, 191, 255, 0.6));
+        }
+
+        .header-logo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #00bfff;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.6);
+            font-family: 'Arial Black', sans-serif;
+        }
+
+        @media (max-width: 480px) {
+            .app-header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 12px 18px;
+            }
+            .header-title {
+                font-size: 1.4rem;
+            }
+            .header-logo-container {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        /* --- ANIMACIONES --- */
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes carVibrate { 0% { transform: translateY(0); } 50% { transform: translateY(-1.5px) translateX(0.5px); } 100% { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR TIPO APP + SUBBARRA MONOSPACE -->
+    <div class="top-bar" style="width:100%; max-width:480px; margin: 0 auto 14px auto;">
+        <div style="background: linear-gradient(90deg,#2c3e7f,#1e2a5c); padding:10px 14px; border-radius:10px 10px 0 0; color:white; display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:800; letter-spacing:1px; font-size:1.1rem;">Minigames M's</div>
+        </div>
+        <div class="header-subbar" style="background:#07060b; padding:8px 12px; border-radius:0 0 10px 10px; display:flex; justify-content:flex-start; align-items:center; gap:10px;">
+            <div style="font-family: 'Courier New', monospace; font-size:0.95rem; color:#cbd5ff;">Minigames M's</div>
+        </div>
+    </div>
+
+    <div id="print-section">
+        <h1 id="print-title" style="color: black; text-shadow: none;">MiniJuegos Ms - Reporte</h1>
+        <p>Usuario: <strong id="print-user-name">Jugador</strong></p>
+        <p>Fecha de impresión: <span id="print-date"></span></p>
+        <div id="print-canvas-target"></div>
+        <table class="print-table" id="print-table-container">
+            <thead>
+                <tr><th>Posición</th><th>Fecha del Intento</th><th>Nivel Alcanzado</th></tr>
+            </thead>
+            <tbody id="print-table-body"></tbody>
+        </table>
+    </div>
+
+    <div id="screen-loading" class="screen active">
+        <div class="loader-container">
+            <h2>Cargando MiniJuegos Ms...</h2>
+            <img src="gatop.gif" alt="Cargando..." class="custom-spinner">
+            <p>Por favor espera un momento</p>
+        </div>
+    </div>
+
+    <div id="screen-login" class="screen">
+        <h1>Iniciar Sesión</h1>
+        <div class="form-group">
+            <label>Usuario</label>
+            <input type="text" id="login-username" placeholder="Ingresa tu usuario">
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="login-password" placeholder="••••••••">
+        </div>
+        <div class="alert" id="login-alert"></div>
+        <button class="btn-login-submit" onclick="handleLogin()">Entrar</button>
+        <button class="btn-switch" onclick="navigateTo('screen-register')">¿No tienes cuenta? Regístrate aquí</button>
+    </div>
+
+    <div id="screen-register" class="screen">
+        <h1>Crear Cuenta</h1>
+        <div class="form-group">
+            <label>Nombre de Usuario</label>
+            <input type="text" id="reg-username" placeholder="Ej: CarGamer123">
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="reg-password" placeholder="Crea una contraseña">
+        </div>
+        <div class="alert" id="reg-alert"></div>
+        <button class="btn-register-submit" onclick="handleRegister()">Registrarme</button>
+        <button class="btn-switch" onclick="navigateTo('screen-login')">¿Ya tienes cuenta? Inicia Sesión</button>
+    </div>
+
+    <div id="screen-menu" class="screen">
+        <h1>Panel Principal</h1>
+        <div class="user-welcome" id="welcome-message">¡Hola!</div>
+        <div class="menu-grid">
+            <div class="tile" onclick="navigateTo('screen-canvas')">
+                    <img src="tiktok-hamster-reading-hamster.png" alt="Pizarrón" style="width:100%; height:120px; object-fit:cover; border-radius:10px;">
+                <div class="tile-caption">Pantalla de Dibujo</div>
+            </div>
+            <div class="tile" onclick="triggerRaceLoading()">
+                <img src="carreras.jpg" alt="Carreras" style="width:100%; height:120px; object-fit:cover; border-radius:10px;">
+                <div class="tile-caption">Carreras Clicker</div>
+            </div>
+            <div class="tile" onclick="navigateTo('screen-calc')">
+                <img src="calculadoraaa.jpg" alt="Calculadora" style="width:100%; height:120px; object-fit:cover; border-radius:10px;">
+                <div class="tile-caption">Calculadora</div>
+            </div>
+            <div class="tile" onclick="printScores()">
+                <img src="impresora.png" alt="Imprimir" style="width:100%; height:120px; object-fit:contain; border-radius:10px; background: rgba(0,0,0,0.12);">
+                <div class="tile-caption">Imprimir Récords</div>
+            </div>
+            <div class="tile" onclick="logout()">
+                <img src="control2.png" alt="Cerrar" style="width:100%; height:120px; object-fit:contain; border-radius:10px; background: rgba(0,0,0,0.12);">
+                <div class="tile-caption">Cerrar Sesión</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-race-loading" class="screen">
+        <div class="race-loader-title">CARRERAS CLICKER</div>
+        <div class="race-loader-subtitle">Cargando pistas...</div>
+        
+        <div class="race-loader-img-container">
+            <img src="carreras.jpg" class="race-loader-img" alt="Auto Deportivo de Carreras">
+        </div>
+
+        <div class="race-progressbar-bg">
+            <div id="race-bar-fill" class="race-progressbar-fill"></div>
+        </div>
+        <div id="race-status-text" class="race-loader-status">PREPARANDO MOTORES...</div>
+    </div>
+
+    <div id="screen-canvas" class="screen">
+        <h1>Lienzo Mágico</h1>
+        <div class="canvas-container">
+            <canvas id="artCanvas" width="350" height="300"></canvas>
+        </div>
+        <div class="controls-panel">
+            <p style="margin: 10px 0 5px 0; font-size: 0.9rem;">Paleta de colores:</p>
+            <div class="color-picker-group">
+                <div class="color-btn selected" style="background-color: #f44336;" onclick="setCanvasColor('#f44336', this)"></div>
+                <div class="color-btn" style="background-color: #2196f3;" onclick="setCanvasColor('#2196f3', this)"></div>
+                <div class="color-btn" style="background-color: #4caf50;" onclick="setCanvasColor('#4caf50', this)"></div>
+                <div class="color-btn" style="background-color: #000000;" onclick="setCanvasColor('#000000', this)"></div>
+                <div class="color-btn eraser" style="background-color: #ffffff;" onclick="setCanvasColor('#ffffff', this)" title="Borrador"></div>
+            </div>
+            <button style="background: linear-gradient(45deg, #4caf50, #00c6ff);" onclick="printCanvasBoard()">🖨️ Imprimir Pizarrón</button>
+            <button class="btn btn-secondary" onclick="clearCanvas()">Borrar Todo</button>
+            <button class="btn btn-secondary" onclick="navigateTo('screen-menu')">Volver al Menú</button>
+        </div>
+    </div>
+
+    <div id="screen-calc" class="screen">
+        <h1>Calculadora</h1>
+        <div class="calc-container">
+            <div id="calc-display" class="calc-screen">0</div>
+            <div class="calc-grid">
+                <button class="calc-btn clear" onclick="clearCalc()">C</button>
+                <button class="calc-btn op" onclick="pressCalcOp('/')">÷</button>
+                <button class="calc-btn op" onclick="pressCalcOp('*')">×</button>
+                <button class="calc-btn op" onclick="pressCalcOp('-')">-</button>
+                
+                <button class="calc-btn" onclick="pressCalcNum('7')">7</button>
+                <button class="calc-btn" onclick="pressCalcNum('8')">8</button>
+                <button class="calc-btn" onclick="pressCalcNum('9')">9</button>
+                <button class="calc-btn op" onclick="pressCalcOp('+')">+</button>
+                
+                <button class="calc-btn" onclick="pressCalcNum('4')">4</button>
+                <button class="calc-btn" onclick="pressCalcNum('5')">5</button>
+                <button class="calc-btn" onclick="pressCalcNum('6')">6</button>
+                <button class="calc-btn" onclick="pressCalcNum('.')">.</button>
+                
+                <button class="calc-btn" onclick="pressCalcNum('1')">1</button>
+                <button class="calc-btn" onclick="pressCalcNum('2')">2</button>
+                <button class="calc-btn" onclick="pressCalcNum('3')">3</button>
+                <button class="calc-btn equal" onclick="calculateResult()">=</button>
+                
+                <button class="calc-btn" style="grid-column: span 2;" onclick="pressCalcNum('0')">0</button>
+            </div>
+        </div>
+        <button class="btn btn-secondary" onclick="navigateTo('screen-menu')">Volver al Menú</button>
+    </div>
+
+    <div id="screen-cars" class="screen">
+        <h1>Clicker de Carreras</h1>
+        <div style="font-size: 1.2rem; font-weight: bold; margin: 10px 0;">Nivel Actual: <span id="race-level">1</span> / Récord: Nivel <span id="high-level">1</span></div>
+        <div class="race-track-container" id="track-click-zone">
+            <div class="finish-line"></div>
+            <div class="track-lane"><div id="car-red" class="car car-enemy">Rojo</div></div>
+            <div class="track-lane"><div id="car-blue" class="car car-player">Tú</div></div>
+        </div>
+        <div id="countdown-display" style="font-size: 1.5rem; font-weight: bold; min-height: 35px; color: #ff4081;">¡Presiona Iniciar!</div>
+        <button id="clicker-btn" class="btn-clicker" onclick="playerClick()" disabled>¡PULSAR PARA ACELERAR! ⚡</button>
+        <button id="start-race-btn" onclick="startRace()">Iniciar Carrera</button>
+        <h2>Historial de Récords</h2>
+        <div class="scores-list" id="scores-display"></div>
+        <button class="btn btn-secondary" style="border-color: #00c6ff; color: #00c6ff; margin-top: 5px;" onclick="printScores()">🖨️ Imprimir mis Récords</button>
+        <button class="btn btn-secondary" onclick="exitCarGame()">Volver al Menú</button>
+    </div>
+
+    <script>
+        function navigateTo(screenId) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(screenId);
+            if(target) target.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                let loggedUser = null;
+                try { loggedUser = localStorage.getItem('currentUser'); } catch(e){}
+                if (loggedUser) { showMenu(loggedUser); } else { navigateTo('screen-login'); }
+            }, 1500);
+        });
+
+        // --- SISTEMA DE CONTROL DE LA NUEVA PANTALLA DE CARGA ---
+        function triggerRaceLoading() {
+            navigateTo('screen-race-loading');
+            const bar = document.getElementById('race-bar-fill');
+            const statusText = document.getElementById('race-status-text');
+            bar.style.width = '0%';
+            
+            let progress = 0;
+            const messages = [
+                "PREPARANDO MOTORES...",
+                "CALENTANDO NEUMÁTICOS...",
+                "COMPRIMIENDO ÓXIDO NITROSO...",
+                "¡ALINEÁNDOSE EN LA SALIDA!"
+            ];
+
+            const interval = setInterval(() => {
+                progress += 4;
+                bar.style.width = progress + '%';
+                
+                if (progress < 30) statusText.textContent = messages[0];
+                else if (progress < 60) statusText.textContent = messages[1];
+                else if (progress < 85) statusText.textContent = messages[2];
+                else statusText.textContent = messages[3];
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        openCarGame(); // Redirige al juego real de carritos tras rellenarse
+                    }, 200);
+                }
+            }, 100); // 100ms * 25 pasos = ~2.5 segundos de carga fluida
+        }
+
+        function getUsersDB() {
+            try {
+                const db = localStorage.getItem('users_database');
+                return db ? JSON.parse(db) : {};
+            } catch(e) { return {}; }
+        }
+        function saveUsersDB(db) { try { localStorage.setItem('users_database', JSON.stringify(db)); } catch(e){} }
+
+        function handleRegister() {
+            const userInp = document.getElementById('reg-username').value.trim();
+            const passInp = document.getElementById('reg-password').value;
+            const alertBox = document.getElementById('reg-alert');
+            if(!userInp || !passInp) { alertBox.textContent = "Campos vacíos."; return; }
+            const db = getUsersDB();
+            if(db[userInp.toLowerCase()]) { alertBox.textContent = "El usuario ya existe."; return; }
+            db[userInp.toLowerCase()] = { username: userInp, password: passInp, maxLevel: 1, scores: [] };
+            saveUsersDB(db);
+            try { localStorage.setItem('currentUser', userInp); } catch(e){}
+            showMenu(userInp);
+        }
+
+        function handleLogin() {
+            const userInp = document.getElementById('login-username').value.trim();
+            const passInp = document.getElementById('login-password').value;
+            const alertBox = document.getElementById('login-alert');
+            const db = getUsersDB();
+            const account = db[userInp.toLowerCase()];
+            if(account && account.password === passInp) {
+                try { localStorage.setItem('currentUser', account.username); } catch(e){}
+                showMenu(account.username);
+            } else { alertBox.textContent = "Datos incorrectos."; }
+        }
+
+        function showMenu(username) {
+            const msg = document.getElementById('welcome-message');
+            if(msg) msg.textContent = `¡Bienvenido/a, ${username}!`;
+            navigateTo('screen-menu');
+        }
+
+        function logout() { 
+            try { localStorage.removeItem('currentUser'); } catch(e){} 
+            document.getElementById('login-username').value = "";
+            document.getElementById('login-password').value = "";
+            document.getElementById('login-alert').textContent = ""; 
+            document.getElementById('reg-username').value = "";
+            document.getElementById('reg-password').value = "";
+            document.getElementById('reg-alert').textContent = "";
+            clearCalc();
+            navigateTo('screen-login'); 
+        }
+
+        // --- CALCULADORA ---
+        let calcExpression = "";
+        function pressCalcNum(val) {
+            if (val === '.' && calcExpression.endsWith('.')) return;
+            calcExpression += val;
+            document.getElementById('calc-display').textContent = calcExpression;
+        }
+        function pressCalcOp(op) {
+            if (calcExpression === "") {
+                if (op === '-') calcExpression = "-";
+                else return;
+            } else {
+                const lastChar = calcExpression.slice(-1);
+                if (['+', '-', '*', '/'].includes(lastChar)) {
+                    calcExpression = calcExpression.slice(0, -1) + op;
+                } else {
+                    calcExpression += op;
+                }
+            }
+            document.getElementById('calc-display').textContent = calcExpression;
+        }
+        function clearCalc() { calcExpression = ""; document.getElementById('calc-display').textContent = "0"; }
+        function calculateResult() {
+            if (calcExpression === "") return;
+            try {
+                let result = Function('"use strict";return (' + calcExpression + ')')();
+                if (result % 1 !== 0) result = parseFloat(result.toFixed(4));
+                document.getElementById('calc-display').textContent = result;
+                calcExpression = result.toString();
+            } catch (error) {
+                document.getElementById('calc-display').textContent = "ERROR";
+                calcExpression = "";
+            }
+        }
+
+        // --- IMPRESIÓN ---
+        function setupPrintMeta(title) {
+            let currentUser = "Jugador";
+            try { currentUser = localStorage.getItem('currentUser') || "Jugador"; } catch(e){}
+            document.getElementById('print-title').textContent = title;
+            document.getElementById('print-user-name').textContent = currentUser;
+            document.getElementById('print-date').textContent = new Date().toLocaleString();
+        }
+        function printScores() {
+            let currentUser = "Jugador";
+            try { currentUser = localStorage.getItem('currentUser') || "Jugador"; } catch(e){}
+            setupPrintMeta("MiniJuegos Ms - Reporte de Puntuaciones");
+            document.getElementById('print-canvas-target').innerHTML = ''; 
+            document.getElementById('print-table-container').style.display = 'table'; 
+            const db = getUsersDB();
+            const userRecord = db[currentUser.toLowerCase()];
+            const tbody = document.getElementById('print-table-body');
+            tbody.innerHTML = '';
+            if(userRecord && userRecord.scores && userRecord.scores.length > 0) {
+                userRecord.scores.forEach((item, index) => {
+                    tbody.innerHTML += `<tr><td>#${index+1}</td><td>${item.date || new Date().toLocaleDateString()}</td><td>Nivel Superado: ${item.level || "1"}</td></tr>`;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="3">No hay récords guardados aún.</td></tr>`;
+            }
+            window.print();
+        }
+        function printCanvasBoard() {
+            setupPrintMeta("MiniJuegos Ms - Obra del Pizarrón Mágico");
+            document.getElementById('print-table-container').style.display = 'none'; 
+            const canvasTarget = document.getElementById('print-canvas-target');
+            const dataUrl = artCanvas.toDataURL("image/png");
+            canvasTarget.innerHTML = `<p style="margin:10px 0; font-style:italic; color:#333;">Copia de tu dibujo:</p><img src="${dataUrl}" class="printed-canvas-preview">`;
+            setTimeout(() => { window.print(); }, 50);
+        }
+
+        // --- LIENZO ---
+        const artCanvas = document.getElementById('artCanvas');
+        const ctxArt = artCanvas.getContext('2d');
+        let drawing = false, strokeColor = '#f44336';
+        ctxArt.lineWidth = 6; ctxArt.lineCap = 'round';
+        artCanvas.addEventListener('mousedown', (e) => { drawing = true; draw(e); });
+        artCanvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', () => { drawing = false; ctxArt.beginPath(); });
+        artCanvas.addEventListener('touchstart', (e) => { drawing = true; draw(e.touches[0]); e.preventDefault(); });
+        artCanvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
+        artCanvas.addEventListener('touchend', () => { drawing = false; ctxArt.beginPath(); });
+        function draw(e) {
+            if (!drawing) return;
+            const rect = artCanvas.getBoundingClientRect();
+            const x = (e.clientX || e.pageX) - rect.left;
+            const y = (e.clientY || e.pageY) - rect.top;
+            ctxArt.strokeStyle = strokeColor;
+            ctxArt.lineWidth = (strokeColor === '#ffffff') ? 20 : 6;
+            ctxArt.lineTo(x, y); ctxArt.stroke(); ctxArt.beginPath(); ctxArt.moveTo(x, y);
+        }
+        function setCanvasColor(color, element) {
+            strokeColor = color;
+            document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+        function clearCanvas() { ctxArt.clearRect(0, 0, artCanvas.width, artCanvas.height); }
+
+        // --- CARRERAS ---
+        let currentLevel = 1, maxLevelReached = 1;
+        let playerPosX = 10, enemyPosX = 10;
+        let raceInterval = null, raceLoopActive = false;
+        const maxTrackWidth = 380; 
+        function openCarGame() {
+            navigateTo('screen-cars'); resetPositions();
+            let currentUser = ""; try { currentUser = localStorage.getItem('currentUser'); } catch(e){}
+            if(currentUser) {
+                const db = getUsersDB();
+                if(db[currentUser.toLowerCase()]) maxLevelReached = parseInt(db[currentUser.toLowerCase()].maxLevel) || 1;
+            }
+            currentLevel = 1;
+            document.getElementById('race-level').textContent = currentLevel;
+            document.getElementById('high-level').textContent = maxLevelReached;
+            document.getElementById('countdown-display').textContent = "¡Presiona Iniciar!";
+            updateScoresDisplay();
+            document.getElementById('track-click-zone').onclick = function() { playerClick(); };
+        }
+        function resetPositions() {
+            playerPosX = 10; enemyPosX = 10;
+            document.getElementById('car-blue').style.left = playerPosX + 'px';
+            document.getElementById('car-red').style.left = enemyPosX + 'px';
+            document.getElementById('clicker-btn').disabled = true;
+            document.getElementById('start-race-btn').style.display = 'block';
+        }
+        function startRace() {
+            document.getElementById('start-race-btn').style.display = 'none';
+            let count = 3; const countdown = document.getElementById('countdown-display'); countdown.textContent = count;
+            let timer = setInterval(() => {
+                count--;
+                if(count > 0) countdown.textContent = count;
+                else if (count === 0) countdown.textContent = "¡YA! 🏁";
+                else { clearInterval(timer); countdown.textContent = "¡Dale click!"; document.getElementById('clicker-btn').disabled = false; launchEnemyAI(); }
+            }, 800);
+        }
+        function playerClick() {
+            if(document.getElementById('clicker-btn').disabled || !raceLoopActive) return;
+            playerPosX += 14; document.getElementById('car-blue').style.left = playerPosX + 'px'; checkWinner();
+        }
+        function launchEnemyAI() {
+            raceLoopActive = true; if(raceInterval) clearInterval(raceInterval);
+            let speedMs = 100, stepPixels = 5;
+            if (currentLevel === 1) { stepPixels = 4; speedMs = 120; }
+            else if (currentLevel === 2) { stepPixels = 6; speedMs = 100; }
+            else if (currentLevel === 3) { stepPixels = 7; speedMs = 80; }
+            else if (currentLevel === 4) { stepPixels = 8; speedMs = 60; }
+            else if (currentLevel === 5) { stepPixels = 10; speedMs = 45; }
+            else if (currentLevel >= 6) { stepPixels = 35; speedMs = 20; }
+            raceInterval = setInterval(() => {
+                if(!raceLoopActive) return;
+                enemyPosX += stepPixels; document.getElementById('car-red').style.left = enemyPosX + 'px'; checkWinner();
+            }, speedMs);
+        }
+        function checkWinner() {
+            if(!raceLoopActive) return;
+            if(playerPosX >= maxTrackWidth) {
+                endRaceGame(); saveNewRecord(currentLevel);
+                alert(`¡Felicidades! Ganaste el Nivel ${currentLevel} 🎉`);
+                if(currentLevel === 5) alert("¡Atención! Has desbloqueado el Nivel 6. Este nivel está modificado y es TOTALMENTE IMPOSIBLE ganar.");
+                currentLevel++; if(currentLevel > maxLevelReached) maxLevelReached = currentLevel;
+                document.getElementById('race-level').textContent = currentLevel; document.getElementById('high-level').textContent = maxLevelReached;
+                resetPositions();
+            } else if(enemyPosX >= maxTrackWidth) {
+                endRaceGame();
+                if(currentLevel === 6) alert("¡Te lo advertimos! El carro rojo corrió a velocidad luz. ¡Imposible de vencer!");
+                else alert(`¡El carro rojo ganó! Te quedaste en el nivel ${currentLevel}.`);
+                currentLevel = 1; document.getElementById('race-level').textContent = currentLevel; resetPositions();
+            }
+        }
+        function endRaceGame() { raceLoopActive = false; clearInterval(raceInterval); document.getElementById('clicker-btn').disabled = true; }
+        function saveNewRecord(lvlSuperado) {
+            let currentUser = ""; try { currentUser = localStorage.getItem('currentUser'); } catch(e){}
+            if(!currentUser) return;
+            const db = getUsersDB();
+            if(db[currentUser.toLowerCase()]) {
+                const nivelLimpio = parseInt(lvlSuperado) || 1;
+                if(nivelLimpio > (db[currentUser.toLowerCase()].maxLevel || 0)) db[currentUser.toLowerCase()].maxLevel = nivelLimpio;
+                db[currentUser.toLowerCase()].scores.unshift({ level: nivelLimpio, date: new Date().toLocaleDateString() });
+                saveUsersDB(db); updateScoresDisplay();
+            }
+        }
+        function updateScoresDisplay() {
+            let currentUser = ""; try { currentUser = localStorage.getItem('currentUser'); } catch(e){}
+            if(!currentUser) return;
+            const db = getUsersDB(); const userRecord = db[currentUser.toLowerCase()];
+            const display = document.getElementById('scores-display'); if(!display) return;
+            display.innerHTML = '';
+            if(userRecord && userRecord.scores && userRecord.scores.length > 0) {
+                userRecord.scores.slice(0, 5).forEach((item) => {
+                    display.innerHTML += `<div class="score-item"><span>Nivel Superado</span><span>Nivel ${item.level || "1"}</span></div>`;
+                });
+            } else { display.innerHTML = '<p style="font-size:0.8rem; opacity:0.6">Aún no registras subidas de nivel.</p>'; }
+        }
+        function exitCarGame() { endRaceGame(); navigateTo('screen-menu'); }
+    </script>
+</body>
+</html>
